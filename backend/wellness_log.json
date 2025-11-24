@@ -1,0 +1,38 @@
+[
+    {
+        "timestamp": "2025-11-24T10:28:07.280457",
+        "mood": "unwell",
+        "energy": "low",
+        "objectives": [
+            "make an AI agent"
+        ],
+        "summary": "Today's advice was to break down the goal of making an AI agent into a small, manageable step, specifically by starting with a tutorial, given the user's low energy."
+    },
+    {
+        "timestamp": "2025-11-24T10:29:26.373908",
+        "mood": "unwell",
+        "energy": "low",
+        "objectives": [
+            "make an AI agent"
+        ],
+        "summary": "The user requested to end the conversation without a check-in."
+    },
+    {
+        "timestamp": "2025-11-24T10:45:46.717676",
+        "mood": "unwell/chaotic",
+        "energy": "low",
+        "objectives": [
+            "watch an AI agent tutorial video"
+        ],
+        "summary": "Despite feeling unwell and having low energy, the user's objective is to watch an AI agent tutorial video, and the advice is to watch it in short, manageable bursts (e.g., 15-20 minutes) and be kind to themselves."
+    },
+    {
+        "timestamp": "2025-11-24T10:52:29.751927",
+        "mood": "good",
+        "energy": "fully energetic",
+        "objectives": [
+            "make an AI agent"
+        ],
+        "summary": "User is feeling good and energetic. Goal is to make an AI agent, starting with research and tutorials."
+    }
+]
