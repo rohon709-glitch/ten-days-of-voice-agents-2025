@@ -215,7 +215,7 @@ async def entrypoint(ctx: JobContext):
 
     print("\n" + "🌿" * 25)
     print("🚀 STARTING WELLNESS SESSION")
-    print("👨‍⚕️ rohon jamadar")
+    print("Made by rohon jamadar")
     
     # 1. Load History from JSON
     history = load_history()
