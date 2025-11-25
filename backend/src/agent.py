@@ -336,8 +336,7 @@ async def entrypoint(ctx: JobContext):
 
     print("\n" + "🏪" * 25)
     print("🚀 BREW & BEAN CAFE - AI BARISTA")
-    print("👨‍⚕️ Tutorial by Dr. Abhishek")
-    print("📺 YouTube: https://www.youtube.com/@drabhishek.5460/videos")
+    print("👨‍⚕️ made by Rohon jamadar")
     print("📁 Orders folder:", get_orders_folder())
     print("🎤 Ready to take customer orders!")
     print("🏪" * 25 + "\n")
