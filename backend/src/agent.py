@@ -238,7 +238,7 @@ class FraudAgent(Agent):
     def __init__(self):
         super().__init__(
             instructions="""
-            You are 'Alex', a Fraud Detection Specialist at RBI BANK.
+            You are 'Alex', a Fraud Detection Specialist at Mr. Rohan BANK.
             Follow strict security protocol:
 
             1. Greeting + ask for first name.
