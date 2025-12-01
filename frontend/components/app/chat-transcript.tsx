@@ -1,86 +1,100 @@
 'use client';
 
-import { AnimatePresence, type HTMLMotionProps, motion } from 'motion/react';
-import { type ReceivedChatMessage } from '@livekit/components-react';
-import { ChatEntry } from '@/components/livekit/chat-entry';
+import { useEffect, useState } from 'react';
+import { MonitorIcon, MoonIcon, SunIcon } from '@phosphor-icons/react';
+import { THEME_MEDIA_QUERY, THEME_STORAGE_KEY, cn } from '@/lib/utils';
 
-const MotionContainer = motion.create('div');
-const MotionChatEntry = motion.create(ChatEntry);
+const THEME_SCRIPT = `
+  const doc = document.documentElement;
+  const theme = localStorage.getItem("${THEME_STORAGE_KEY}") ?? "system";
 
-const CONTAINER_MOTION_PROPS = {
-  variants: {
-    hidden: {
-      opacity: 0,
-      transition: {
-        ease: 'easeOut',
-        duration: 0.3,
-        staggerChildren: 0.1,
-        staggerDirection: -1,
-      },
-    },
-    visible: {
-      opacity: 1,
-      transition: {
-        delay: 0.2,
-        ease: 'easeOut',
-        duration: 0.3,
-        stagerDelay: 0.2,
-        staggerChildren: 0.1,
-        staggerDirection: 1,
-      },
-    },
-  },
-  initial: 'hidden',
-  animate: 'visible',
-  exit: 'hidden',
-};
+  if (theme === "system") {
+    if (window.matchMedia("${THEME_MEDIA_QUERY}").matches) {
+      doc.classList.add("dark");
+    } else {
+      doc.classList.add("light");
+    }
+  } else {
+    doc.classList.add(theme);
+  }
+`
+  .trim()
+  .replace(/\n/g, '')
+  .replace(/\s+/g, ' ');
 
-const MESSAGE_MOTION_PROPS = {
-  variants: {
-    hidden: {
-      opacity: 0,
-      translateY: 10,
-    },
-    visible: {
-      opacity: 1,
-      translateY: 0,
-    },
-  },
-};
+export type ThemeMode = 'dark' | 'light' | 'system';
 
-interface ChatTranscriptProps {
-  hidden?: boolean;
-  messages?: ReceivedChatMessage[];
+function applyTheme(theme: ThemeMode) {
+  const doc = document.documentElement;
+
+  doc.classList.remove('dark', 'light');
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+  if (theme === 'system') {
+    if (window.matchMedia(THEME_MEDIA_QUERY).matches) {
+      doc.classList.add('dark');
+    } else {
+      doc.classList.add('light');
+    }
+  } else {
+    doc.classList.add(theme);
+  }
 }
 
-export function ChatTranscript({
-  hidden = false,
-  messages = [],
-  ...props
-}: ChatTranscriptProps & Omit<HTMLMotionProps<'div'>, 'ref'>) {
-  return (
-    <AnimatePresence>
-      {!hidden && (
-        <MotionContainer {...CONTAINER_MOTION_PROPS} {...props}>
-          {messages.map(({ id, timestamp, from, message, editTimestamp }: ReceivedChatMessage) => {
-            const locale = navigator?.language ?? 'en-US';
-            const messageOrigin = from?.isLocal ? 'local' : 'remote';
-            const hasBeenEdited = !!editTimestamp;
+interface ThemeToggleProps {
+  className?: string;
+}
 
-            return (
-              <MotionChatEntry
-                key={id}
-                locale={locale}
-                timestamp={timestamp}
-                message={message}
-                messageOrigin={messageOrigin}
-                hasBeenEdited={hasBeenEdited}
-                {...MESSAGE_MOTION_PROPS}
-              />
-            );
-          })}
-        </MotionContainer>
+export function ApplyThemeScript() {
+  return <script id="theme-script">{THEME_SCRIPT}</script>;
+}
+
+export function ThemeToggle({ className }: ThemeToggleProps) {
+  const [theme, setTheme] = useState<ThemeMode | undefined>(undefined);
+
+  useEffect(() => {
+    const storedTheme = (localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode) ?? 'system';
+
+    setTheme(storedTheme);
+  }, []);
+
+  function handleThemeChange(theme: ThemeMode) {
+    applyTheme(theme);
+    setTheme(theme);
+  }
+
+  return (
+    <div
+      className={cn(
+        'text-foreground bg-background flex w-full flex-row justify-end divide-x overflow-hidden rounded-full border',
+        className
       )}
-    </AnimatePresence>
+    >
+      <span className="sr-only">Color scheme toggle</span>
+      <button
+        type="button"
+        onClick={() => handleThemeChange('dark')}
+        className="cursor-pointer p-1 pl-1.5"
+      >
+        <span className="sr-only">Enable dark color scheme</span>
+        <MoonIcon size={16} weight="bold" className={cn(theme !== 'dark' && 'opacity-25')} />
+      </button>
+      <button
+        type="button"
+        onClick={() => handleThemeChange('light')}
+        className="cursor-pointer px-1.5 py-1"
+      >
+        <span className="sr-only">Enable light color scheme</span>
+        <SunIcon size={16} weight="bold" className={cn(theme !== 'light' && 'opacity-25')} />
+      </button>
+      <button
+        type="button"
+        onClick={() => handleThemeChange('system')}
+        className="cursor-pointer p-1 pr-1.5"
+      >
+        <span className="sr-only">Enable system color scheme</span>
+        <MonitorIcon size={16} weight="bold" className={cn(theme !== 'system' && 'opacity-25')} />
+      </button>
+    </div>
   );
 }
