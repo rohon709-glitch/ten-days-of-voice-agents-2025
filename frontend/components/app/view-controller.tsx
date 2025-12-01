@@ -1,68 +1,100 @@
 'use client';
 
-import { useRef } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { useRoomContext } from '@livekit/components-react';
-import { useSession } from '@/components/app/session-provider';
-import { SessionView } from '@/components/app/session-view';
-import { WelcomeView } from '@/components/app/welcome-view';
+import { useEffect, useState } from 'react';
+import { MonitorIcon, MoonIcon, SunIcon } from '@phosphor-icons/react';
+import { THEME_MEDIA_QUERY, THEME_STORAGE_KEY, cn } from '@/lib/utils';
 
-const MotionWelcomeView = motion.create(WelcomeView);
-const MotionSessionView = motion.create(SessionView);
+const THEME_SCRIPT = `
+  const doc = document.documentElement;
+  const theme = localStorage.getItem("${THEME_STORAGE_KEY}") ?? "system";
 
-const VIEW_MOTION_PROPS = {
-  variants: {
-    visible: {
-      opacity: 1,
-    },
-    hidden: {
-      opacity: 0,
-    },
-  },
-  initial: 'hidden',
-  animate: 'visible',
-  exit: 'hidden',
-  transition: {
-    duration: 0.5,
-    ease: 'linear',
-  },
-};
-
-export function ViewController() {
-  const room = useRoomContext();
-  const isSessionActiveRef = useRef(false);
-  const { appConfig, isSessionActive, startSession } = useSession();
-
-  // animation handler holds a reference to stale isSessionActive value
-  isSessionActiveRef.current = isSessionActive;
-
-  // disconnect room after animation completes
-  const handleAnimationComplete = () => {
-    if (!isSessionActiveRef.current && room.state !== 'disconnected') {
-      room.disconnect();
+  if (theme === "system") {
+    if (window.matchMedia("${THEME_MEDIA_QUERY}").matches) {
+      doc.classList.add("dark");
+    } else {
+      doc.classList.add("light");
     }
-  };
+  } else {
+    doc.classList.add(theme);
+  }
+`
+  .trim()
+  .replace(/\n/g, '')
+  .replace(/\s+/g, ' ');
+
+export type ThemeMode = 'dark' | 'light' | 'system';
+
+function applyTheme(theme: ThemeMode) {
+  const doc = document.documentElement;
+
+  doc.classList.remove('dark', 'light');
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+  if (theme === 'system') {
+    if (window.matchMedia(THEME_MEDIA_QUERY).matches) {
+      doc.classList.add('dark');
+    } else {
+      doc.classList.add('light');
+    }
+  } else {
+    doc.classList.add(theme);
+  }
+}
+
+interface ThemeToggleProps {
+  className?: string;
+}
+
+export function ApplyThemeScript() {
+  return <script id="theme-script">{THEME_SCRIPT}</script>;
+}
+
+export function ThemeToggle({ className }: ThemeToggleProps) {
+  const [theme, setTheme] = useState<ThemeMode | undefined>(undefined);
+
+  useEffect(() => {
+    const storedTheme = (localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode) ?? 'system';
+
+    setTheme(storedTheme);
+  }, []);
+
+  function handleThemeChange(theme: ThemeMode) {
+    applyTheme(theme);
+    setTheme(theme);
+  }
 
   return (
-    <AnimatePresence mode="wait">
-      {/* Welcome screen */}
-      {!isSessionActive && (
-        <MotionWelcomeView
-          key="welcome"
-          {...VIEW_MOTION_PROPS}
-          startButtonText={appConfig.startButtonText}
-          onStartCall={startSession}
-        />
+    <div
+      className={cn(
+        'text-foreground bg-background flex w-full flex-row justify-end divide-x overflow-hidden rounded-full border',
+        className
       )}
-      {/* Session view */}
-      {isSessionActive && (
-        <MotionSessionView
-          key="session-view"
-          {...VIEW_MOTION_PROPS}
-          appConfig={appConfig}
-          onAnimationComplete={handleAnimationComplete}
-        />
-      )}
-    </AnimatePresence>
+    >
+      <span className="sr-only">Color scheme toggle</span>
+      <button
+        type="button"
+        onClick={() => handleThemeChange('dark')}
+        className="cursor-pointer p-1 pl-1.5"
+      >
+        <span className="sr-only">Enable dark color scheme</span>
+        <MoonIcon size={16} weight="bold" className={cn(theme !== 'dark' && 'opacity-25')} />
+      </button>
+      <button
+        type="button"
+        onClick={() => handleThemeChange('light')}
+        className="cursor-pointer px-1.5 py-1"
+      >
+        <span className="sr-only">Enable light color scheme</span>
+        <SunIcon size={16} weight="bold" className={cn(theme !== 'light' && 'opacity-25')} />
+      </button>
+      <button
+        type="button"
+        onClick={() => handleThemeChange('system')}
+        className="cursor-pointer p-1 pr-1.5"
+      >
+        <span className="sr-only">Enable system color scheme</span>
+        <MonitorIcon size={16} weight="bold" className={cn(theme !== 'system' && 'opacity-25')} />
+      </button>
+    </div>
   );
 }
